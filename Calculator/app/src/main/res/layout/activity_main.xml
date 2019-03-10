@@ -8,7 +8,7 @@
 
     <TextView
         android:id="@+id/display"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
         android:layout_marginLeft="16dp"
@@ -17,6 +17,8 @@
         android:layout_marginRight="16dp"
         android:layout_marginBottom="16dp"
         android:editable="true"
+        android:gravity="center"
+        android:text="@string/initialExpression"
         android:textSize="18sp"
         app:layout_constraintBottom_toTopOf="@+id/linearLayout"
         app:layout_constraintEnd_toEndOf="parent"
@@ -41,6 +43,28 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="1.0">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <ImageButton
+                android:id="@+id/leftArrow"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:onClick="moveLeft"
+                android:src="@drawable/left_arrow" />
+
+            <ImageButton
+                android:id="@+id/rightArrow"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:onClick="moveRight"
+                app:srcCompat="@drawable/right_arrow" />
+        </LinearLayout>
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -235,6 +259,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
+                android:onClick="evaluate"
                 android:text="@string/enter" />
         </LinearLayout>
 
