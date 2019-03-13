@@ -232,6 +232,14 @@
                 android:text="@string/scalar0" />
 
             <Button
+                android:id="@+id/decimalPointButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:onClick="addToExpression"
+                android:text="@string/decimal_point" />
+
+            <Button
                 android:id="@+id/divide"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
