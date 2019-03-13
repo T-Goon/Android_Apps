@@ -148,7 +148,6 @@ public class MainActivity extends AppCompatActivity {
         // Has a valid set of open and close parens
         int indexOfOpenParen = expression.indexOf('(');
         int indexOfCloseParen = expression.lastIndexOf(')');
-        System.out.println(expression);
 
         if(indexOfOpenParen != -1 && indexOfCloseParen != -1) {
             if(indexOfOpenParen != 0)
@@ -197,9 +196,11 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private String oppHelper(String expression, int indexOfOpp, char opp){
-        float constants[] = findConstants(indexOfOpp, expression);
+        float constants[] = findConstants(indexOfOpp, expression); //!!!
+
         int indexOfOps[] = findIndexOfOpps(indexOfOpp, expression);
         float result = 0;
+
 
         if(constants == null)
             return "Invalid Expression 2";
@@ -252,6 +253,7 @@ public class MainActivity extends AppCompatActivity {
         if(left.equals(""))
             return null;
 
+        System.out.println(left);
         String right = "";
         float negr = 1;
 
@@ -260,7 +262,7 @@ public class MainActivity extends AppCompatActivity {
             if(Character.isDigit(expression.charAt(i)) || expression.charAt(i) == '.'){
                 right = right + expression.charAt(i);
             }
-            else if(expression.charAt(i) == '-' && !Character.isDigit(expression.charAt(i + 1))){
+            else if(expression.charAt(i) == '-' && i!= expression.length() && Character.isDigit(expression.charAt(i + 1))){
                 negr = -1;
             }
             else{
@@ -268,7 +270,7 @@ public class MainActivity extends AppCompatActivity {
             }
         }
 
-        if(left.equals(""))
+        if(right.equals(""))
             return null;
 
         return new float[]{Float.parseFloat(left) * negl, Float.parseFloat(right) * negr};
