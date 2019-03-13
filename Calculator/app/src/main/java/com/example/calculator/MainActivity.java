@@ -122,8 +122,8 @@ public class MainActivity extends AppCompatActivity {
 
         expression = evaluateExpression(expression);
 
-        text.replace(0, text.length(), " "+expression);
-        cursorLocation = 0;
+        text.replace(0, text.length(), expression+" ");
+        cursorLocation = expression.length();
     }
 
     private String evaluateExpression(String expression){
