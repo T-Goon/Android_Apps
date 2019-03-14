@@ -185,10 +185,20 @@ public class MainActivity extends AppCompatActivity {
         for(int i=0;i<expression.length();i++){
 
             if(expression.charAt(i) == op1){
-                expression = oppHelper(expression, i, op1);
+                String result = oppHelper(expression, i, op1);
+                if(result.equals("Abort Action")){
+                    continue;
+                }
+                else
+                    expression = result;
             }
             else if(expression.charAt(i) == op2){
-                expression = oppHelper(expression, i, op2);
+                String result = oppHelper(expression, i, op2);
+                if(result.equals("Abort Action")){
+                    continue;
+                }
+                else
+                    expression = result;
             }
         }
 
@@ -201,9 +211,8 @@ public class MainActivity extends AppCompatActivity {
         int indexOfOps[] = findIndexOfOpps(indexOfOpp, expression);
         float result = 0;
 
-
         if(constants == null)
-            return "Invalid Expression 2";
+            return "Abort Action";
 
         if(opp == '*')
             result = constants[0] * constants[1];
@@ -250,10 +259,10 @@ public class MainActivity extends AppCompatActivity {
         }
 
         // If there are no numbers
-        if(left.equals(""))
+        if(left.equals("")){
             return null;
+        }
 
-        System.out.println(left);
         String right = "";
         float negr = 1;
 
