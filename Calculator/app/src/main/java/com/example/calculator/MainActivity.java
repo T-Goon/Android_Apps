@@ -10,6 +10,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
+import java.util.ArrayList;
 import java.util.TimerTask;
 import java.util.function.BiFunction;
 
@@ -142,25 +143,70 @@ public class MainActivity extends AppCompatActivity {
      * Checks if there is an expression in parentheses to evaluate and if there is evaluate it
      * and update the given expression
      * @param expression Mathematical expression in string form
-     * @return The expression with the parentheses evaluated if there were any
+     * @return The expression with the parentheses evaluated if there were any or a message if the expression
+     * is invalid.
      */
     private String evaluateParens(String expression){
-        // Has a valid set of open and close parens
-        int indexOfOpenParen = expression.indexOf('(');
-        int indexOfCloseParen = expression.lastIndexOf(')');
+        int parenPair[] = new int[2];
+        // Initialize array with -1's
+        parenPair[0] = -1;
+        parenPair[1] = -1;
 
-        if(indexOfOpenParen != -1 && indexOfCloseParen != -1) {
-            if(indexOfOpenParen != 0)
-                expression = expression.substring(0, indexOfOpenParen) +
-                        evaluateExpression(expression.substring(indexOfOpenParen + 1, indexOfCloseParen)) +
-                        expression.substring(indexOfCloseParen + 1, expression.length());
-            else
-                expression = evaluateExpression(expression.substring(indexOfOpenParen + 1, indexOfCloseParen)) +
-                        expression.substring(indexOfCloseParen + 1, expression.length());
+        int deepestOpenParen = expression.indexOf('(');
+
+        // Find the first and deepest pair of parens.
+        while(deepestOpenParen != -1){
+            boolean nextIt = false;
+            int closestCloseParen = -1;
+
+            // Look for the closest close paren
+            for(int i=deepestOpenParen + 1;i<expression.length();i++){
+                // If it finds another open paren first then set it was the deepest open paren
+                // and go to the next loop iteration.
+                if(expression.charAt(i) == '('){
+                    deepestOpenParen = i;
+                    nextIt = true;
+                    break;
+                }
+                else if(expression.charAt(i) == ')'){
+                    closestCloseParen = i;
+                }
+            }
+
+            if(nextIt)
+                continue;
+
+            parenPair[0] = deepestOpenParen;
+            parenPair[1] = closestCloseParen;
+
+            break;
         }
-        else if(indexOfOpenParen != -1 || indexOfCloseParen != -1)
-            expression = "Invalid Expression 1";
 
+        // If there is a valid paren pair
+        if(parenPair[0] != -1 && parenPair[1] != -1) {
+            // Normal case where the open paren is not at index 0.
+            if(parenPair[0] != 0)
+                // expression = part before the open paren + evaluated expression inside the paren
+                // + part after the open paren
+                // (Removes the paren pair from the expression)
+                expression = expression.substring(0, parenPair[0]) +
+                        evaluateExpression(expression.substring(parenPair[0] + 1, parenPair[1])) +
+                        expression.substring(parenPair[1] + 1, expression.length());
+            // Special case where the open paren is at index 0.
+            else
+                // expression = evaluated expression inside the paren + part after the open paren
+                // (Removes the paren pair from the expression)
+                expression = evaluateExpression(expression.substring(parenPair[0] + 1, parenPair[1])) +
+                        expression.substring(parenPair[1] + 1, expression.length());
+        }
+        // If the expression contains imbalanced parens send a message to the user.
+        else if(parenPair[0] != -1 || parenPair[1] != -1)
+            expression = "Invalid Expression";
+
+
+        // Recurse if there is a possibility for more than one paren pair.
+        if(expression.indexOf('(') != -1)
+            expression = evaluateParens(expression);
 
         return expression;
     }
