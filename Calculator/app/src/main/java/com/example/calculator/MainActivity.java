@@ -20,6 +20,7 @@ public class MainActivity extends AppCompatActivity {
     private static int cursorLocation = 0;
     Handler cursorHandler = new Handler();
     long startTime = 0;
+    private static String abort = "Abort Action";
 
     Runnable timerRunnable = new Runnable() {
         @Override
@@ -127,10 +128,15 @@ public class MainActivity extends AppCompatActivity {
         cursorLocation = expression.length();
     }
 
+    /**
+     * Follows PEMDAS to evaluate the expression.
+     * @param expression String representation of the expression
+     * @return The evaluated expression.
+     */
     private String evaluateExpression(String expression){
         expression = evaluateParens(expression);
 
-        //evaluateExponents(expression);
+        expression = evaluateExponents(expression);
 
         expression = evaluateOpp(expression, '*', '/');
 
@@ -211,8 +217,25 @@ public class MainActivity extends AppCompatActivity {
         return expression;
     }
 
-    private void evaluateExponents(String expression){
+    /**
+     * Finds and evaluates any exponents in the expression.
+     * @param expression expression in string form
+     * @return The expression with any exponents evaluated or the original expression.
+     */
+    private String evaluateExponents(String expression){
+        // Loop through the expression looking for '^''s
+        for(int i=0;i<expression.length();i++){
+            // If it finds one have oppHelper evaluate it
+            if(expression.charAt(i) == '^'){
+                expression = oppHelper(expression, i, '^');
+            }
+        }
 
+        if(expression.equals(abort)){
+            return "Misuse of Exponents";
+        }
+
+        return expression;
     }
 
     /**
@@ -232,7 +255,7 @@ public class MainActivity extends AppCompatActivity {
 
             if(expression.charAt(i) == op1){
                 String result = oppHelper(expression, i, op1);
-                if(result.equals("Abort Action")){
+                if(result.equals(abort)){
                     continue;
                 }
                 else
@@ -240,7 +263,7 @@ public class MainActivity extends AppCompatActivity {
             }
             else if(expression.charAt(i) == op2){
                 String result = oppHelper(expression, i, op2);
-                if(result.equals("Abort Action")){
+                if(result.equals(abort)){
                     continue;
                 }
                 else
@@ -252,15 +275,17 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private String oppHelper(String expression, int indexOfOpp, char opp){
-        float constants[] = findConstants(indexOfOpp, expression); //!!!
+        float constants[] = findConstants(indexOfOpp, expression);
 
         int indexOfOps[] = findIndexOfOpps(indexOfOpp, expression);
         float result = 0;
 
         if(constants == null)
-            return "Abort Action";
+            return abort;
 
-        if(opp == '*')
+        if(opp == '^')
+            result = (float)Math.pow(constants[0], constants[1]);
+        else if(opp == '*')
             result = constants[0] * constants[1];
         else if(opp == '/')
             result = constants[0] / constants[1];
@@ -380,6 +405,8 @@ public class MainActivity extends AppCompatActivity {
             case ')':
                 return true;
             case '(':
+                return true;
+            case '^':
                 return true;
         }
 

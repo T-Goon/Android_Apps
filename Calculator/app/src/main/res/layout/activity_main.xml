@@ -240,6 +240,14 @@
                 android:text="@string/decimal_point" />
 
             <Button
+                android:id="@+id/raiseToPower"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:onClick="addToExpression"
+                android:text="@string/carrot" />
+
+            <Button
                 android:id="@+id/divide"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
