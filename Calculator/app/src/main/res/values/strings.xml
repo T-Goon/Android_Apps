@@ -22,4 +22,7 @@
     <string name="openParen">(</string>
     <string name="closeParen">)</string>
     <string name="carrot">^</string>
+    <string name="sine">sin(</string>
+    <string name="cosine">cos(</string>
+    <string name="tangent">tan(</string>
 </resources>

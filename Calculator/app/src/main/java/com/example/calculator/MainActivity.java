@@ -21,6 +21,7 @@ public class MainActivity extends AppCompatActivity {
     Handler cursorHandler = new Handler();
     long startTime = 0;
     private static String abort = "Abort Action";
+    private static String[] opList = {"(", ")", "+", "-", "*", "/", "^"};
 
     Runnable timerRunnable = new Runnable() {
         @Override
@@ -52,7 +53,7 @@ public class MainActivity extends AppCompatActivity {
         if((view instanceof Button) && text.toString().length() <= 300){
             Button button = (Button)view;
             text.insert(cursorLocation, button.getText());
-            cursorLocation++;
+            cursorLocation += button.getText().length();
         }
 
     }
@@ -119,6 +120,7 @@ public class MainActivity extends AppCompatActivity {
      */
     public void evaluate(View view){
         String expression = text.toString();
+        // Remove the cursor from the expression before evaluating it
         expression = expression.replace(" ", "");
         expression = expression.replace("|", "");
 
@@ -138,9 +140,9 @@ public class MainActivity extends AppCompatActivity {
 
         expression = evaluateExponents(expression);
 
-        expression = evaluateOpp(expression, '*', '/');
+        expression = evaluateOpp(expression, "*", "/");
 
-        expression = evaluateOpp(expression, '+', '-');
+        expression = evaluateOpp(expression, "+", "-");
 
         return expression;
     }
@@ -153,6 +155,8 @@ public class MainActivity extends AppCompatActivity {
      * is invalid.
      */
     private String evaluateParens(String expression){
+        expression = parenPrep(expression);
+
         int parenPair[] = new int[2];
         // Initialize array with -1's
         parenPair[0] = -1;
@@ -218,6 +222,35 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
+     * If there are any parens that are like this -> ")("
+     * put a * sign between them
+     * @param expression the expression in string form
+     * @return the expressions with the added *'s if they are needed
+     */
+    private String parenPrep(String expression){
+        expression.replaceAll("\\)\\(", ")*(");
+
+        // Looks for "digit(" pattern and places a * between them
+        int i = expression.indexOf("(");
+        while(i > 0 && Character.isDigit(expression.substring(i-1, i).charAt(0))){
+            expression = expression.substring(0, i) + "*" + expression.substring(i);
+
+            i = expression.indexOf("(", i+2);
+        }
+
+        // Looks for the ")digit" pattern or the ")." pattern and places a * between them
+        int j = expression.indexOf(")");
+        while(j != -1 && j < expression.length()-1 && Character.isDigit(expression.substring(j+1, j+2).charAt(0))
+                || expression.substring(j+1, j+2).charAt(0) == '.'){
+            expression = expression.substring(0, j+1) + "*" + expression.substring(j+1);
+
+            j = expression.indexOf(")", j+1);
+        }
+
+        return expression;
+    }
+
+    /**
      * Finds and evaluates any exponents in the expression.
      * @param expression expression in string form
      * @return The expression with any exponents evaluated or the original expression.
@@ -227,7 +260,7 @@ public class MainActivity extends AppCompatActivity {
         for(int i=0;i<expression.length();i++){
             // If it finds one have oppHelper evaluate it
             if(expression.charAt(i) == '^'){
-                expression = oppHelper(expression, i, '^');
+                expression = oppHelper(expression, i, "^");
             }
         }
 
@@ -249,11 +282,11 @@ public class MainActivity extends AppCompatActivity {
      * EX: 1+2*2 -> 1+4
      *     1+1 -> 2
      */
-    private String evaluateOpp(String expression, char op1, char op2){
+    private String evaluateOpp(String expression, String op1, String op2){
         // Loops through expression string looking for opp1 or opp2
         for(int i=0;i<expression.length();i++){
 
-            if(expression.charAt(i) == op1){
+            if(expression.substring(i,i+1).equals(op1)){
                 String result = oppHelper(expression, i, op1);
                 if(result.equals(abort)){
                     continue;
@@ -261,7 +294,7 @@ public class MainActivity extends AppCompatActivity {
                 else
                     expression = result;
             }
-            else if(expression.charAt(i) == op2){
+            else if(expression.substring(i, i+1).equals(op2)){
                 String result = oppHelper(expression, i, op2);
                 if(result.equals(abort)){
                     continue;
@@ -274,7 +307,7 @@ public class MainActivity extends AppCompatActivity {
         return expression;
     }
 
-    private String oppHelper(String expression, int indexOfOpp, char opp){
+    private String oppHelper(String expression, int indexOfOpp, String opp){
         float constants[] = findConstants(indexOfOpp, expression);
 
         int indexOfOps[] = findIndexOfOpps(indexOfOpp, expression);
@@ -283,15 +316,15 @@ public class MainActivity extends AppCompatActivity {
         if(constants == null)
             return abort;
 
-        if(opp == '^')
+        if(opp.equals(opList[6]))
             result = (float)Math.pow(constants[0], constants[1]);
-        else if(opp == '*')
+        else if(opp.equals(opList[4]))
             result = constants[0] * constants[1];
-        else if(opp == '/')
+        else if(opp.equals(opList[5]))
             result = constants[0] / constants[1];
-        else if(opp == '+')
+        else if(opp.equals(opList[2]))
             result = constants[0] + constants[1];
-        else if(opp == '-' )
+        else if(opp.equals(opList[3]))
             result = constants[0] - constants[1];
 
         if(indexOfOps[0] != 0)
@@ -321,7 +354,7 @@ public class MainActivity extends AppCompatActivity {
             if(Character.isDigit(expression.charAt(i)) || expression.charAt(i) == '.'){
                 left = expression.charAt(i) + left;
             }
-            else if(expression.charAt(i) == '-' && ((i == 0) || isOp(expression.charAt(i - 1)))){
+            else if(expression.charAt(i) == '-' && ((i == 0) || isOp(expression.substring(i - 1, i)))){
                 negl = -1;
             }
             else{
@@ -367,13 +400,13 @@ public class MainActivity extends AppCompatActivity {
         int leftIndex = 0;
         int rightIndex = expression.length();
 
-        for(int i=locOfOp-1;i>=0;i--){
-            if(expression.charAt(i) == '-' && i != 0 && isOp(expression.charAt(i - 1))){
+        for(int i=locOfOp-1;i>0;i--){
+            if(expression.charAt(i) == '-' && i != 0 && isOp(expression.substring(i - 1, i))){
                 leftIndex = i - 1;
                 break;
             }
-            else if(isOp(expression.charAt(i)) && expression.charAt(i) != '-'){
-                leftIndex = i;
+            else if(isOp(expression.substring(i - 1, i)) && expression.charAt(i) != '-'){
+                leftIndex = i - 1;
                 break;
             }
         }
@@ -383,7 +416,7 @@ public class MainActivity extends AppCompatActivity {
                 rightIndex = i;
                 break;
             }
-            else if(isOp(expression.charAt(i)) && expression.charAt(i) != '-'){
+            else if(isOp(expression.substring(i, i + 1)) && expression.charAt(i) != '-'){
                 rightIndex = i;
                 break;
             }
@@ -392,24 +425,19 @@ public class MainActivity extends AppCompatActivity {
         return new int[]{leftIndex, rightIndex};
     }
 
-    private boolean isOp(char ch){
-        switch (ch){
-            case '+':
+    /**
+     * Checks the passed in string to check if it is an operator or not
+     * @param op the passed in string
+     * @return true|false, depending on if op is an operator or not
+     */
+    private boolean isOp(String op){
+        for(int i=0;i<opList.length;i++) {
+            if(opList[i].equals(op)){
                 return true;
-            case '-':
-                return true;
-            case '*':
-                return true;
-            case '/':
-                return true;
-            case ')':
-                return true;
-            case '(':
-                return true;
-            case '^':
-                return true;
+            }
         }
 
         return false;
+
     }
 }

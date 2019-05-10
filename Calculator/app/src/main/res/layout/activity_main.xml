@@ -104,6 +104,36 @@
             android:orientation="horizontal">
 
             <Button
+                android:id="@+id/sine"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:onClick="addToExpression"
+                android:text="@string/sine" />
+
+            <Button
+                android:id="@+id/cosine"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:onClick="addToExpression"
+                android:text="@string/cosine" />
+
+            <Button
+                android:id="@+id/tangent"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:onClick="addToExpression"
+                android:text="@string/tangent" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <Button
                 android:id="@+id/number1"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
