@@ -13,6 +13,7 @@ import android.widget.TextView;
 import java.util.ArrayList;
 import java.util.TimerTask;
 import java.util.function.BiFunction;
+import java.util.regex.Pattern;
 
 public class MainActivity extends AppCompatActivity {
     private static Editable text;
@@ -21,7 +22,7 @@ public class MainActivity extends AppCompatActivity {
     Handler cursorHandler = new Handler();
     long startTime = 0;
     private static String abort = "Abort Action";
-    private static String[] opList = {"(", ")", "+", "-", "*", "/", "^"};
+    private static String[] opList = {"(", ")", "+", "-", "*", "/", "^", "sin", "cos", "tan"};
 
     Runnable timerRunnable = new Runnable() {
         @Override
@@ -138,11 +139,42 @@ public class MainActivity extends AppCompatActivity {
     private String evaluateExpression(String expression){
         expression = evaluateParens(expression);
 
+        expression = evaluateTrig(expression, opList[7]);
+        expression = evaluateTrig(expression, opList[8]);
+        expression = evaluateTrig(expression, opList[9]);
+
         expression = evaluateExponents(expression);
 
-        expression = evaluateOpp(expression, "*", "/");
+        expression = evaluateOp(expression, "*", "/");
 
-        expression = evaluateOpp(expression, "+", "-");
+        expression = evaluateOp(expression, "+", "-");
+
+        return expression;
+    }
+
+    private String evaluateTrig(String expression, String op){
+        while(expression.indexOf(op) != -1) {
+            try {
+                Double num = Double.parseDouble(evaluateExpression(expression.substring(expression.indexOf(op) + 3,
+                                findIndexOfOpps(expression.indexOf(op), expression)[1])));
+                Double temp = 0d;
+
+                if(op.equals(opList[7]))
+                    temp = Math.sin(num);
+                else if(op.equals(opList[8]))
+                    temp = Math.cos(num);
+                else if(op.equals(opList[9]))
+                    temp = Math.tan(num);
+
+                expression = expression.replaceFirst(op + "\\d+(\\.\\d+)?([-+/*]\\d+(\\.\\d+)?)*",
+                        "("+String.valueOf(temp)+")");
+            }
+            catch (Exception e){
+                return "Invalid Expression";
+            }
+        }
+
+        expression = evaluateParens(expression);
 
         return expression;
     }
@@ -240,8 +272,8 @@ public class MainActivity extends AppCompatActivity {
 
         // Looks for the ")digit" pattern or the ")." pattern and places a * between them
         int j = expression.indexOf(")");
-        while(j != -1 && j < expression.length()-1 && Character.isDigit(expression.substring(j+1, j+2).charAt(0))
-                || expression.substring(j+1, j+2).charAt(0) == '.'){
+        while(j != -1 && j < expression.length()-1 && (Character.isDigit(expression.substring(j+1, j+2).charAt(0))
+                || expression.substring(j+1, j+2).charAt(0) == '.')){
             expression = expression.substring(0, j+1) + "*" + expression.substring(j+1);
 
             j = expression.indexOf(")", j+1);
@@ -258,9 +290,9 @@ public class MainActivity extends AppCompatActivity {
     private String evaluateExponents(String expression){
         // Loop through the expression looking for '^''s
         for(int i=0;i<expression.length();i++){
-            // If it finds one have oppHelper evaluate it
+            // If it finds one have opHelper evaluate it
             if(expression.charAt(i) == '^'){
-                expression = oppHelper(expression, i, "^");
+                expression = opHelper(expression, i, "^");
             }
         }
 
@@ -282,12 +314,12 @@ public class MainActivity extends AppCompatActivity {
      * EX: 1+2*2 -> 1+4
      *     1+1 -> 2
      */
-    private String evaluateOpp(String expression, String op1, String op2){
+    private String evaluateOp(String expression, String op1, String op2){
         // Loops through expression string looking for opp1 or opp2
         for(int i=0;i<expression.length();i++){
 
             if(expression.substring(i,i+1).equals(op1)){
-                String result = oppHelper(expression, i, op1);
+                String result = opHelper(expression, i, op1);
                 if(result.equals(abort)){
                     continue;
                 }
@@ -295,7 +327,7 @@ public class MainActivity extends AppCompatActivity {
                     expression = result;
             }
             else if(expression.substring(i, i+1).equals(op2)){
-                String result = oppHelper(expression, i, op2);
+                String result = opHelper(expression, i, op2);
                 if(result.equals(abort)){
                     continue;
                 }
@@ -307,7 +339,7 @@ public class MainActivity extends AppCompatActivity {
         return expression;
     }
 
-    private String oppHelper(String expression, int indexOfOpp, String opp){
+    private String opHelper(String expression, int indexOfOpp, String opp){
         float constants[] = findConstants(indexOfOpp, expression);
 
         int indexOfOps[] = findIndexOfOpps(indexOfOpp, expression);
@@ -438,6 +470,5 @@ public class MainActivity extends AppCompatActivity {
         }
 
         return false;
-
     }
 }
