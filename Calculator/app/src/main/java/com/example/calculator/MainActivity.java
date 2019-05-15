@@ -321,7 +321,7 @@ public class MainActivity extends AppCompatActivity {
             if(expression.substring(i,i+1).equals(op1)){
                 String result = opHelper(expression, i, op1);
                 if(result.equals(abort)){
-                    continue;
+                    return "Invalid Expression";
                 }
                 else
                     expression = result;
@@ -329,7 +329,7 @@ public class MainActivity extends AppCompatActivity {
             else if(expression.substring(i, i+1).equals(op2)){
                 String result = opHelper(expression, i, op2);
                 if(result.equals(abort)){
-                    continue;
+                    return "Invalid Expression";
                 }
                 else
                     expression = result;
@@ -418,7 +418,12 @@ public class MainActivity extends AppCompatActivity {
         if(right.equals(""))
             return null;
 
-        return new float[]{Float.parseFloat(left) * negl, Float.parseFloat(right) * negr};
+        try {
+            return new float[]{Float.parseFloat(left) * negl, Float.parseFloat(right) * negr};
+        }
+        catch(Exception e){
+            return null;
+        }
     }
 
     /**
