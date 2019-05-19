@@ -19,12 +19,12 @@ public class MainActivity extends AppCompatActivity {
     private static Editable text;
     private static java.util.Timer cursor = new java.util.Timer();
     private static int cursorLocation = 0;
-    Handler cursorHandler = new Handler();
-    long startTime = 0;
+    private static Handler cursorHandler = new Handler();
+    private static long startTime = 0;
     private static String abort = "Abort Action";
     private static String[] opList = {"(", ")", "+", "-", "*", "/", "^", "sin", "cos", "tan"};
 
-    Runnable timerRunnable = new Runnable() {
+    private static Runnable timerRunnable = new Runnable() {
         @Override
         public void run() {
             blink();
@@ -50,7 +50,7 @@ public class MainActivity extends AppCompatActivity {
      * Adds a component to the mathematical expression.
      * @param view Button view object
      */
-    public void addToExpression(View view){
+    public static void addToExpression(View view){
         if((view instanceof Button) && text.toString().length() <= 300){
             Button button = (Button)view;
             text.insert(cursorLocation, button.getText());
@@ -63,7 +63,7 @@ public class MainActivity extends AppCompatActivity {
      * Removes a component from the mathematical expression.
      * @param view Button view object
      */
-    public void removeFromExpression(View view){
+    public static void removeFromExpression(View view){
         if(text.length() > 1 && cursorLocation > 0) {
             text.delete(cursorLocation - 1, cursorLocation);
             cursorLocation--;
@@ -74,7 +74,7 @@ public class MainActivity extends AppCompatActivity {
      * Clears all text from the mathematical expression.
      * @param view Button view object
      */
-    public void clearExpression(View view){
+    public static void clearExpression(View view){
         text.replace(0, text.toString().length(), " ");
         cursorLocation = 0;
     }
@@ -82,7 +82,7 @@ public class MainActivity extends AppCompatActivity {
     /**
      * Changes the cursor between a space and a |
      */
-    private void blink(){
+    private static void blink(){
         if(text.toString().charAt(cursorLocation) == '|'){
             text.replace(cursorLocation,cursorLocation+1, " ");
         }
@@ -95,7 +95,7 @@ public class MainActivity extends AppCompatActivity {
      * Moves the cursor to the left in the display
      * @param view Button view object
      */
-    public void moveLeft(View view){
+    public static void moveLeft(View view){
         if(cursorLocation > 0) {
             text.delete(cursorLocation, cursorLocation + 1);
             cursorLocation--;
@@ -107,7 +107,7 @@ public class MainActivity extends AppCompatActivity {
      * Moves the cursor to the right in the display
      * @param view Button view object
      */
-    public void moveRight(View view){
+    public static void moveRight(View view){
         if(cursorLocation < text.toString().length() - 1){
             text.delete(cursorLocation, cursorLocation + 1);
             cursorLocation++;
@@ -119,7 +119,7 @@ public class MainActivity extends AppCompatActivity {
      * Evaluates the mathematical expression in the display and displays it
      * @param view Button view object
      */
-    public void evaluate(View view){
+    public static void evaluate(View view){
         String expression = text.toString();
         // Remove the cursor from the expression before evaluating it
         expression = expression.replace(" ", "");
@@ -136,7 +136,7 @@ public class MainActivity extends AppCompatActivity {
      * @param expression String representation of the expression
      * @return The evaluated expression.
      */
-    private String evaluateExpression(String expression){
+    public static String evaluateExpression(String expression){
         expression = evaluateParens(expression);
 
         expression = evaluateTrig(expression, opList[7]);
@@ -152,7 +152,7 @@ public class MainActivity extends AppCompatActivity {
         return expression;
     }
 
-    private String evaluateTrig(String expression, String op){
+    private static String evaluateTrig(String expression, String op){
         while(expression.indexOf(op) != -1) {
             try {
                 Double num = Double.parseDouble(evaluateExpression(expression.substring(expression.indexOf(op) + 3,
@@ -167,14 +167,12 @@ public class MainActivity extends AppCompatActivity {
                     temp = Math.tan(num);
 
                 expression = expression.replaceFirst(op + "\\d+(\\.\\d+)?([-+/*]\\d+(\\.\\d+)?)*",
-                        "("+String.valueOf(temp)+")");
+                        String.valueOf(temp));
             }
             catch (Exception e){
                 return "Invalid Expression";
             }
         }
-
-        expression = evaluateParens(expression);
 
         return expression;
     }
@@ -186,7 +184,7 @@ public class MainActivity extends AppCompatActivity {
      * @return The expression with the parentheses evaluated if there were any or a message if the expression
      * is invalid.
      */
-    private String evaluateParens(String expression){
+    private static String evaluateParens(String expression){
         expression = parenPrep(expression);
 
         int parenPair[] = new int[2];
@@ -259,7 +257,7 @@ public class MainActivity extends AppCompatActivity {
      * @param expression the expression in string form
      * @return the expressions with the added *'s if they are needed
      */
-    private String parenPrep(String expression){
+    private static String parenPrep(String expression){
         expression.replaceAll("\\)\\(", ")*(");
 
         // Looks for "digit(" pattern and places a * between them
@@ -287,7 +285,7 @@ public class MainActivity extends AppCompatActivity {
      * @param expression expression in string form
      * @return The expression with any exponents evaluated or the original expression.
      */
-    private String evaluateExponents(String expression){
+    private static String evaluateExponents(String expression){
         // Loop through the expression looking for '^''s
         for(int i=0;i<expression.length();i++){
             // If it finds one have opHelper evaluate it
@@ -314,32 +312,36 @@ public class MainActivity extends AppCompatActivity {
      * EX: 1+2*2 -> 1+4
      *     1+1 -> 2
      */
-    private String evaluateOp(String expression, String op1, String op2){
-        // Loops through expression string looking for opp1 or opp2
-        for(int i=0;i<expression.length();i++){
+    private static String evaluateOp(String expression, String op1, String op2){
+        // Loops through expression string looking for op1 or op2
+        for(int i=1;i<expression.length();i++){
 
             if(expression.substring(i,i+1).equals(op1)){
                 String result = opHelper(expression, i, op1);
                 if(result.equals(abort)){
                     return "Invalid Expression";
                 }
-                else
-                    expression = result;
+                else {
+                    expression = evaluateOp(result, op1, op2);
+                    break;
+                }
             }
             else if(expression.substring(i, i+1).equals(op2)){
                 String result = opHelper(expression, i, op2);
                 if(result.equals(abort)){
                     return "Invalid Expression";
                 }
-                else
-                    expression = result;
+                else {
+                    expression = evaluateOp(result, op1, op2);
+                    break;
+                }
             }
         }
 
         return expression;
     }
 
-    private String opHelper(String expression, int indexOfOpp, String opp){
+    private static String opHelper(String expression, int indexOfOpp, String opp){
         float constants[] = findConstants(indexOfOpp, expression);
 
         int indexOfOps[] = findIndexOfOpps(indexOfOpp, expression);
@@ -377,7 +379,7 @@ public class MainActivity extends AppCompatActivity {
      * @return the constants left and right of the operator
      *  [left constant, right constant]
      */
-    private float[] findConstants(int locOfOp, String expression){
+    private static float[] findConstants(int locOfOp, String expression){
         String left = "";
         float negl = 1;
 
@@ -433,7 +435,7 @@ public class MainActivity extends AppCompatActivity {
      * @return the operators left and right of the operator
      *  [index of left operator, index of right operator]
      */
-    private int[] findIndexOfOpps(int locOfOp, String expression){
+    private static int[] findIndexOfOpps(int locOfOp, String expression){
         int leftIndex = 0;
         int rightIndex = expression.length();
 
@@ -467,7 +469,7 @@ public class MainActivity extends AppCompatActivity {
      * @param op the passed in string
      * @return true|false, depending on if op is an operator or not
      */
-    private boolean isOp(String op){
+    private static boolean isOp(String op){
         for(int i=0;i<opList.length;i++) {
             if(opList[i].equals(op)){
                 return true;
