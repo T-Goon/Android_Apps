@@ -22,7 +22,8 @@ public class MainActivity extends AppCompatActivity {
     private static Handler cursorHandler = new Handler();
     private static long startTime = 0;
     private static String abort = "Abort Action";
-    private static String[] opList = {"(", ")", "+", "-", "*", "/", "^", "sin", "cos", "tan"};
+    private static String[] opList = {"(", ")", "+", "-", "*", "/", "^", "sin", "cos", "tan",
+                                        "asin", "acos", "atan"};
 
     private static Runnable timerRunnable = new Runnable() {
         @Override
@@ -139,9 +140,12 @@ public class MainActivity extends AppCompatActivity {
     public static String evaluateExpression(String expression){
         expression = evaluateParens(expression);
 
-        expression = evaluateTrig(expression, opList[7]);
-        expression = evaluateTrig(expression, opList[8]);
-        expression = evaluateTrig(expression, opList[9]);
+        for(int i=12;i>=10;i--){
+            expression = evaluateTrig(expression, opList[i], 4);
+        }
+        for(int i=9;i>=7;i--){
+            expression = evaluateTrig(expression, opList[i], 3);
+        }
 
         expression = evaluateExponents(expression);
 
@@ -152,11 +156,18 @@ public class MainActivity extends AppCompatActivity {
         return expression;
     }
 
-    private static String evaluateTrig(String expression, String op){
+    /**
+     * Used to evaluate any trig in the expression
+     * @param expression The mathematical expression in string form
+     * @param op The trig operator in string form (sin|cos|tan|asin|acos|atan)
+     * @param offset An integer offset so that the expression parses correctly, 3 for sin/cos/tan and 4 for asin/cos/tan
+     * @return The expression with the trig evaluated.
+     */
+    private static String evaluateTrig(String expression, String op, int offset){
         while(expression.indexOf(op) != -1) {
             try {
-                Double num = Double.parseDouble(evaluateExpression(expression.substring(expression.indexOf(op) + 3,
-                                findIndexOfOpps(expression.indexOf(op), expression)[1])));
+                Double num = Double.parseDouble(evaluateExpression(expression.substring(expression.indexOf(op) + offset,
+                                findIndexOfOps(expression.indexOf(op), expression)[1])));
                 Double temp = 0d;
 
                 if(op.equals(opList[7]))
@@ -165,6 +176,12 @@ public class MainActivity extends AppCompatActivity {
                     temp = Math.cos(num);
                 else if(op.equals(opList[9]))
                     temp = Math.tan(num);
+                else if(op.equals(opList[10]))
+                    temp = Math.asin(num);
+                else if(op.equals(opList[11]))
+                    temp = Math.acos(num);
+                else if(op.equals(opList[12]))
+                    temp = Math.atan(num);
 
                 expression = expression.replaceFirst(op + "\\d+(\\.\\d+)?([-+/*]\\d+(\\.\\d+)?)*",
                         String.valueOf(temp));
@@ -210,6 +227,7 @@ public class MainActivity extends AppCompatActivity {
                 }
                 else if(expression.charAt(i) == ')'){
                     closestCloseParen = i;
+                    break;
                 }
             }
 
@@ -243,7 +261,6 @@ public class MainActivity extends AppCompatActivity {
         else if(parenPair[0] != -1 || parenPair[1] != -1)
             expression = "Invalid Expression";
 
-
         // Recurse if there is a possibility for more than one paren pair.
         if(expression.indexOf('(') != -1)
             expression = evaluateParens(expression);
@@ -259,13 +276,17 @@ public class MainActivity extends AppCompatActivity {
      */
     private static String parenPrep(String expression){
         expression.replaceAll("\\)\\(", ")*(");
+        int i = expression.indexOf("(");
 
         // Looks for "digit(" pattern and places a * between them
-        int i = expression.indexOf("(");
-        while(i > 0 && Character.isDigit(expression.substring(i-1, i).charAt(0))){
-            expression = expression.substring(0, i) + "*" + expression.substring(i);
+        while(i != -1) {
+            while (i > 0 && Character.isDigit(expression.substring(i - 1, i).charAt(0))) {
+                expression = expression.substring(0, i) + "*" + expression.substring(i);
 
-            i = expression.indexOf("(", i+2);
+                i = expression.indexOf("(", i + 2);
+            }
+
+            i = expression.indexOf("(", i+1);
         }
 
         // Looks for the ")digit" pattern or the ")." pattern and places a * between them
@@ -313,6 +334,9 @@ public class MainActivity extends AppCompatActivity {
      *     1+1 -> 2
      */
     private static String evaluateOp(String expression, String op1, String op2){
+        if(expression.charAt(0) != '-' && isOp(expression.substring(0, 1)))
+            return "Invalid Expression";
+
         // Loops through expression string looking for op1 or op2
         for(int i=1;i<expression.length();i++){
 
@@ -341,24 +365,24 @@ public class MainActivity extends AppCompatActivity {
         return expression;
     }
 
-    private static String opHelper(String expression, int indexOfOpp, String opp){
-        float constants[] = findConstants(indexOfOpp, expression);
+    private static String opHelper(String expression, int indexOfOp, String op){
+        float constants[] = findConstants(indexOfOp, expression);
 
-        int indexOfOps[] = findIndexOfOpps(indexOfOpp, expression);
+        int indexOfOps[] = findIndexOfOps(indexOfOp, expression);
         float result = 0;
 
         if(constants == null)
             return abort;
 
-        if(opp.equals(opList[6]))
+        if(op.equals(opList[6]))
             result = (float)Math.pow(constants[0], constants[1]);
-        else if(opp.equals(opList[4]))
+        else if(op.equals(opList[4]))
             result = constants[0] * constants[1];
-        else if(opp.equals(opList[5]))
+        else if(op.equals(opList[5]))
             result = constants[0] / constants[1];
-        else if(opp.equals(opList[2]))
+        else if(op.equals(opList[2]))
             result = constants[0] + constants[1];
-        else if(opp.equals(opList[3]))
+        else if(op.equals(opList[3]))
             result = constants[0] - constants[1];
 
         if(indexOfOps[0] != 0)
@@ -435,7 +459,7 @@ public class MainActivity extends AppCompatActivity {
      * @return the operators left and right of the operator
      *  [index of left operator, index of right operator]
      */
-    private static int[] findIndexOfOpps(int locOfOp, String expression){
+    private static int[] findIndexOfOps(int locOfOp, String expression){
         int leftIndex = 0;
         int rightIndex = expression.length();
 

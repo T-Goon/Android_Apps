@@ -25,4 +25,7 @@
     <string name="sine">sin(</string>
     <string name="cosine">cos(</string>
     <string name="tangent">tan(</string>
+    <string name="arcsine">asin(</string>
+    <string name="arccosine">acos(</string>
+    <string name="arctangent">atan(</string>
 </resources>
