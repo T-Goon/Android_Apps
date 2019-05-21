@@ -25,7 +25,7 @@ public class MainActivity extends AppCompatActivity {
     private static long startTime = 0;
     private static String abort = "Abort Action";
     private static String[] opList = {"(", ")", "+", "-", "*", "/", "^", "sin", "cos", "tan",
-                                        "asin", "acos", "atan"};
+                                        "asin", "acos", "atan", "log", "ln"};
 
     private static Runnable timerRunnable = new Runnable() {
         @Override
@@ -145,11 +145,13 @@ public class MainActivity extends AppCompatActivity {
         expression = evaluateParens(expression);
 
         for(int i=12;i>=10;i--){
-            expression = evaluateTrig(expression, opList[i], 4);
+            expression = evaluateFns(expression, opList[i], 4);
         }
         for(int i=9;i>=7;i--){
-            expression = evaluateTrig(expression, opList[i], 3);
+            expression = evaluateFns(expression, opList[i], 3);
         }
+        expression = evaluateFns(expression, opList[13], 3);
+        expression = evaluateFns(expression, opList[14], 2);
 
         expression = evaluateExponents(expression);
 
@@ -161,13 +163,14 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
-     * Used to evaluate any trig in the expression
+     * Used to evaluate any functions in the expression
      * @param expression The mathematical expression in string form
-     * @param op The trig operator in string form (sin|cos|tan|asin|acos|atan)
-     * @param offset An integer offset so that the expression parses correctly, 3 for sin/cos/tan and 4 for asin/cos/tan
+     * @param op The operator in string form (sin|cos|tan|asin|acos|atan|log|ln)
+     * @param offset An integer offset so that the expression parses correctly,
+     *               2 for ln, 3 for sin/cos/tan/log, and 4 for asin/cos/tan
      * @return The expression with the trig evaluated.
      */
-    private static String evaluateTrig(String expression, String op, int offset){
+    private static String evaluateFns(String expression, String op, int offset){
         while(expression.indexOf(op) != -1) {
             try {
                 Double num = Double.parseDouble(evaluateExpression(expression.substring(expression.indexOf(op) + offset,
@@ -186,6 +189,10 @@ public class MainActivity extends AppCompatActivity {
                     result = Math.acos(num);
                 else if(op.equals(opList[12]))
                     result = Math.atan(num);
+                else if(op.equals(opList[13]))
+                    result = Math.log10(num);
+                else if(op.equals(opList[14]))
+                    result = Math.log(num);
 
                 String resultString = formatter.format(result);
 

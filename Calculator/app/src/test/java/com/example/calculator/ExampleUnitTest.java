@@ -63,4 +63,10 @@ public class ExampleUnitTest {
         assertEquals("53.0", MainActivity.evaluateExpression("(2(5(8/2)+(5)))+3"));
         assertEquals("53.0", MainActivity.evaluateExpression("3+(((5)+(8/2)5)2)"));
     }
+
+    @Test
+    public void log_isCorrect(){
+        assertEquals(formatter.format(Math.log10(5)), MainActivity.evaluateExpression("log(5)"));
+        assertEquals(formatter.format(Math.log(5)), MainActivity.evaluateExpression("ln(5)"));
+    }
 }
