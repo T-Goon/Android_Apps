@@ -10,6 +10,8 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.TimerTask;
 import java.util.function.BiFunction;
@@ -33,6 +35,7 @@ public class MainActivity extends AppCompatActivity {
             cursorHandler.postDelayed(this, 1000);
         }
     };
+    private static NumberFormat formatter = new DecimalFormat("#0.00000");
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -138,6 +141,7 @@ public class MainActivity extends AppCompatActivity {
      * @return The evaluated expression.
      */
     public static String evaluateExpression(String expression){
+        expression = handleSymbols(expression);
         expression = evaluateParens(expression);
 
         for(int i=12;i>=10;i--){
@@ -168,23 +172,25 @@ public class MainActivity extends AppCompatActivity {
             try {
                 Double num = Double.parseDouble(evaluateExpression(expression.substring(expression.indexOf(op) + offset,
                                 findIndexOfOps(expression.indexOf(op), expression)[1])));
-                Double temp = 0d;
+                Double result = 0d;
 
                 if(op.equals(opList[7]))
-                    temp = Math.sin(num);
+                    result = Math.sin(num);
                 else if(op.equals(opList[8]))
-                    temp = Math.cos(num);
+                    result = Math.cos(num);
                 else if(op.equals(opList[9]))
-                    temp = Math.tan(num);
+                    result = Math.tan(num);
                 else if(op.equals(opList[10]))
-                    temp = Math.asin(num);
+                    result = Math.asin(num);
                 else if(op.equals(opList[11]))
-                    temp = Math.acos(num);
+                    result = Math.acos(num);
                 else if(op.equals(opList[12]))
-                    temp = Math.atan(num);
+                    result = Math.atan(num);
+
+                String resultString = formatter.format(result);
 
                 expression = expression.replaceFirst(op + "\\d+(\\.\\d+)?([-+/*]\\d+(\\.\\d+)?)*",
-                        String.valueOf(temp));
+                        resultString);
             }
             catch (Exception e){
                 return "Invalid Expression";
@@ -501,5 +507,11 @@ public class MainActivity extends AppCompatActivity {
         }
 
         return false;
+    }
+
+    private static String handleSymbols(String expression){
+        expression = expression.replaceAll("π", "("+String.valueOf(Math.PI)+")");
+        expression = expression.replaceAll("e", "("+String.valueOf(Math.E)+")");
+        return expression;
     }
 }

@@ -28,4 +28,8 @@
     <string name="arcsine">asin(</string>
     <string name="arccosine">acos(</string>
     <string name="arctangent">atan(</string>
+    <string name="pi">π</string>
+    <string name="e">e</string>
+    <string name="log">log(</string>
+    <string name="nat_log">ln(</string>
 </resources>
