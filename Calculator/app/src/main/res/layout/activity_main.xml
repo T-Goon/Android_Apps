@@ -73,6 +73,14 @@
             android:orientation="horizontal">
 
             <Button
+                android:id="@+id/absoluteValue"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:onClick="addToExpression"
+                android:text="@string/absolute_value" />
+
+            <Button
                 android:id="@+id/openParaen"
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"

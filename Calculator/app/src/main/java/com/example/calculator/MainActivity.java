@@ -24,8 +24,8 @@ public class MainActivity extends AppCompatActivity {
     private static Handler cursorHandler = new Handler();
     private static long startTime = 0;
     private static String abort = "Abort Action";
-    private static String[] opList = {"(", ")", "+", "-", "*", "/", "^", "sin", "cos", "tan",
-                                        "asin", "acos", "atan", "log", "ln"};
+    private static String[] opList = {"(", ")", "+", "-", "*", "/", "^", "sin", "cos", "tan", "log", "abs",
+                                        "asin", "acos", "atan", "ln"};
 
     private static Runnable timerRunnable = new Runnable() {
         @Override
@@ -144,14 +144,15 @@ public class MainActivity extends AppCompatActivity {
         expression = handleSymbols(expression);
         expression = evaluateParens(expression);
 
-        for(int i=12;i>=10;i--){
+        for(int i=14;i>=12;i--){
             expression = evaluateFns(expression, opList[i], 4);
         }
-        for(int i=9;i>=7;i--){
+
+        for(int i=11;i>=7;i--){
             expression = evaluateFns(expression, opList[i], 3);
         }
-        expression = evaluateFns(expression, opList[13], 3);
-        expression = evaluateFns(expression, opList[14], 2);
+
+        expression = evaluateFns(expression, opList[15], 2);
 
         expression = evaluateExponents(expression);
 
@@ -183,20 +184,22 @@ public class MainActivity extends AppCompatActivity {
                     result = Math.cos(num);
                 else if(op.equals(opList[9]))
                     result = Math.tan(num);
-                else if(op.equals(opList[10]))
-                    result = Math.asin(num);
-                else if(op.equals(opList[11]))
-                    result = Math.acos(num);
                 else if(op.equals(opList[12]))
-                    result = Math.atan(num);
+                    result = Math.asin(num);
                 else if(op.equals(opList[13]))
-                    result = Math.log10(num);
+                    result = Math.acos(num);
                 else if(op.equals(opList[14]))
+                    result = Math.atan(num);
+                else if(op.equals(opList[10]))
+                    result = Math.log10(num);
+                else if(op.equals(opList[15]))
                     result = Math.log(num);
+                else if(op.equals(opList[11]))
+                    result = Math.abs(num);
 
                 String resultString = formatter.format(result);
 
-                expression = expression.replaceFirst(op + "\\d+(\\.\\d+)?([-+/*]\\d+(\\.\\d+)?)*",
+                expression = expression.replaceFirst(op + "-?\\d+(\\.\\d+)?",
                         resultString);
             }
             catch (Exception e){
@@ -271,12 +274,14 @@ public class MainActivity extends AppCompatActivity {
                         expression.substring(parenPair[1] + 1, expression.length());
         }
         // If the expression contains imbalanced parens send a message to the user.
-        else if(parenPair[0] != -1 || parenPair[1] != -1)
+        else if(parenPair[0] != -1 || parenPair[1] != -1){
             expression = "Invalid Expression";
+        }
 
         // Recurse if there is a possibility for more than one paren pair.
-        if(expression.indexOf('(') != -1)
+        if(expression.indexOf('(') != -1) {
             expression = evaluateParens(expression);
+        }
 
         return expression;
     }
